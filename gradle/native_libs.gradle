@@ -1,0 +1,150 @@
+class SizeInfo {
+    //名称
+    String name
+    //大小
+    long size
+
+    SizeInfo(String name, long size) {
+        this.name = name
+        this.size = size
+    }
+}
+
+class NativeLibInfo {
+    // native lib 名称
+    String lib_name
+    // so 依赖的项目相对路径信息列表
+    List<String> so_relative_path_list
+    // native lib 中 so 的大小
+    List<SizeInfo> size_info
+
+    NativeLibInfo(String lib_name, List<String> so_relative_path_list, List<SizeInfo> size_info) {
+        this.lib_name = lib_name
+        this.so_relative_path_list = so_relative_path_list
+        this.size_info = size_info
+    }
+}
+
+
+class ReportInfo {
+    //本项目、子项目、三方库
+    String name
+    //依赖 so 信息列表
+    List<NativeLibInfo> info
+
+    ReportInfo(String name, List<NativeLibInfo> info) {
+        this.name = name
+        this.info = info
+    }
+}
+
+project.afterEvaluate {
+    project.android.applicationVariants.all { variant ->
+        //获取构建变体的名称
+        logger.lifecycle("${variant.name}")
+        def variantName = variant.name
+        def name = String.valueOf(variantName.charAt(0)).toUpperCase() + variantName.substring(1)
+        def mergeNativeLibsTask = project.tasks.findByName("merge${name}NativeLibs")
+        if (mergeNativeLibsTask != null) {
+            mergeNativeLibsTask.doLast { task ->
+                project.logger.lifecycle("Execute ${mergeNativeLibsTask.path} doLast")
+                def result = new ArrayList<ReportInfo>()
+                //当前项目相关的 so 文件列表
+                def projectNativeResult = new ReportInfo("project native libs", getProjectSoInfo(false, task.projectNativeLibs.getFiles()))
+                result.add(projectNativeResult)
+                //子项目相关的 so 文件列表
+                def subProjectNativeResult = new ReportInfo("sub project native libs", getProjectSoInfo(false, task.subProjectNativeLibs.getFiles()))
+                result.add(subProjectNativeResult)
+                //三方库相关的 so 文件列表
+                def externalProjectNativeResult = new ReportInfo("external project native libs", getProjectSoInfo(true, task.externalLibNativeLibs.getFiles()))
+                result.add(externalProjectNativeResult)
+
+                def fileDir = new File(project.buildDir.path + "/reports/so")
+                if (!fileDir.exists()) {
+                    fileDir.mkdirs()
+                }
+                saveSoInfoReport(fileDir, result)
+            }
+        }
+    }
+}
+/**
+ * 保存项目依赖的 so 信息列表到 json 文件中
+ * @param savePath 保存路径目录
+ * @param result 项目依赖的 so 信息列表
+ */
+def saveSoInfoReport(File saveDir, ArrayList<ReportInfo> result) {
+    def reportFile = new File(saveDir, "native_libs.json")
+    if (reportFile.exists()) {
+        reportFile.delete()
+    }
+    def jsonBuilder = new groovy.json.JsonBuilder()
+    jsonBuilder result.collect { reportInfo ->
+        [
+                name: reportInfo.name,
+                info: reportInfo.info.collect { nativeLibInfo ->
+                    [
+                            lib_name             : nativeLibInfo.lib_name,
+                            so_relative_path_list: nativeLibInfo.so_relative_path_list,
+                            size_info            : nativeLibInfo.size_info.collect { sizeInfo ->
+                                [
+                                        name: sizeInfo.name,
+                                        size: sizeInfo.size
+                                ]
+                            }
+                    ]
+                }
+        ]
+    }
+    def jsonResult = jsonBuilder.toPrettyString()
+    def writer = new BufferedWriter(new FileWriter(reportFile))
+    writer.write(jsonResult)
+    writer.flush()
+    writer.close()
+    project.logger.lifecycle("Project Native Libs Json Report:" + reportFile.path + '\n')
+}
+
+/**
+ * 获取项目依赖的 native lib 中的 so 信息列表
+ * @param isExternal 是否是三方库
+ * @param fileSet so 路径列表
+ * @return so 信息列表
+ */
+def getProjectSoInfo(boolean isExternal, Set<File> fileSet) {
+    def projectNames = new HashSet<String>()
+    def nativeLibsInfoList = new ArrayList<NativeLibInfo>()
+    def rootProjectPath = project.rootProject.projectDir.path
+    def buildName = project.rootProject.buildDir.name
+    fileSet.forEach { file ->
+        def projectName
+        def sizeInfoMap = new HashMap<String, Long>()
+        if (!isExternal) {
+            projectName = file.path.substring(rootProjectPath.length() + 1, file.path.indexOf(buildName) - 1)
+        } else {
+            projectName = file.parentFile.name
+        }
+        projectNames.add(projectName)
+        def childFiles = file.listFiles().toList()
+        def soRelativePathList = new ArrayList<>()
+        while (childFiles.size() > 0) {
+            def childFile = childFiles.remove(0)
+            if (childFile.isDirectory()) {
+                childFiles.addAll(childFile.listFiles())
+            } else {
+                def soRelativePath = childFile.path.substring(file.path.length() + 1)
+                def soRelativeParentPath = soRelativePath.substring(0, soRelativePath.lastIndexOf('/'))
+                def size = sizeInfoMap.get(soRelativeParentPath, 0L)
+                size = size + childFile.length()
+                sizeInfoMap.put(soRelativeParentPath, size)
+                soRelativePathList.add(soRelativePath)
+            }
+        }
+        def sizeInfo = new ArrayList<SizeInfo>(sizeInfoMap.size())
+        sizeInfoMap.each { key, value ->
+            def size = new SizeInfo(key, value)
+            sizeInfo.add(size)
+        }
+        nativeLibsInfoList.add(new NativeLibInfo(projectName, soRelativePathList, sizeInfo))
+    }
+    return nativeLibsInfoList
+}
