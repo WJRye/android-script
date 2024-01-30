@@ -1,4 +1,19 @@
-# 在 Android 开发中 使用 Python 脚本
+# 在 Android 开发中使用 Python 脚本
+- [引言](#引言)
+- [python 环境](#python-环境)
+- [adb](#adb)
+   - [getprop](#getprop)
+   - [main acitivity](#mainacitivity)
+   - [pm](#pm)
+   - [proc](#proc)
+   - [screenshot](#screenshot)
+   - [top activity](#topactivity)
+   - [wm](#wm)
+- [gradle](#gradle)
+   - [dependencies](#dependencies)
+   - [dependencyInsight](#dependencyinsight)
+   - [native libs](#nativelibs)
+- [git](#git)
 
 ## 引言
 
@@ -209,7 +224,7 @@ Report File Path: /Users/wangjiang/Public/software/android-workplace/Demo/build/
 
 ```
 
-### dependencies
+### dependencyInsight
 
 使用 `python3 dependencyinsight.py android_project_path dependency`，android_project_path 为项目路径，dependency 为需要查找的依赖库，比如 io.reactivex.rxjava3:rxjava：
 
