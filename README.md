@@ -17,7 +17,7 @@
         - [CI/CD](#CICD)
 - [git](#git)
     - [查看某个版本某个作者的所有提交更改](#查看某个版本某个作者的所有提交更改)
-    - [查看某个提交第一次出现的 release 版本](#查看某个提交第一次出现的 release 版本)
+    - [查看某个提交第一次出现的 release 版本](#查看某个提交第一次出现的-release-版本)
     - [重复代码检查](#重复代码检查)
     - [增量代码检查](#增量代码检查)
 
@@ -371,16 +371,26 @@ python3 diff_branch.py /Users/wangjiang/Public/software/python-workplace/android
 输出结果：
 Html Report Path: /Users/wangjiang/Public/software/python-workplace/android-script/build/reports/diff/WJRye/feature_0.0.2-wangjiang-diff-release_0.0.1.html
 ```
+<img src="build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.png" alt="文件报告">
 
-<figure>
- <iframe src="build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.html" width="100%" height="600" frameborder="0"></iframe>
-</figure>
-
-[feature_0.0.1-wangjiang-diff-release_0.0.2.html 文件报告](build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.html)
-
+<a href="./build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.html">
+feature_0.0.1-wangjiang-diff-release_0.0.2.html 文件报告</a>
 
 ### 查看某个提交第一次出现的 release 版本
 
+在日常的 Android 项目开发中，如果想排查问题，或查看 feature 在哪个版本上线的，那么查看某个 commit 第一次出现的 release
+分支，能够辅助你得到更多有用的信息。
+
+```
+python3 find_commit.py /Users/wangjiang/Public/software/python-workplace/android-script dd1eee4
+
+输出结果：
+Html Report Path: /Users/wangjiang/Public/software/python-workplace/android-script/build/reports/diff/commit_id/dd1eee4.html
+```
+<img src="build/reports/diff/commit_id/dd1eee4.png" alt="文件报告">
+<a href="./build/reports/diff/commit_id/dd1eee4.html"> dd1eee4.html 文件报告</a>
+
 ### 重复代码检查
+
 
 ### 增量代码检查

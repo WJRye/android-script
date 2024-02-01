@@ -15,7 +15,7 @@ def find_commit(commit_id):
         ['git', 'branch', '--contains', commit_id, '--all'])
     if result is not None:
         return result.splitlines()
-    return None
+    return []
 
 
 def compare_versions(version1, version2):
@@ -109,7 +109,7 @@ def find_last_version(current_version):
         next_version = f'{next_major_version:0}.{next_minor_version:02d}.0'
         return next_version
     else:
-        return None
+        return current_version
 
 
 def get_branch_commit_list(current_branch, last_branch, author):
@@ -180,8 +180,8 @@ def make_html_file(project_path, commit_id, title, content):
 
 
 if __name__ == "__main__":
-    project_path = '/Users/wangjiang/Public/software/android-workplace/andruid'
-    commit_id = '574e6ccc26ef3896de9b65c23fa18e9ec87313d0'
+    project_path = ''
+    commit_id = ''
 
     args = sys.argv[1:]
     if len(args) > 0 and os.path.exists(args[0]):

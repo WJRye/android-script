@@ -113,9 +113,9 @@ def make_html_file(project_path, target_branch_content, current_branch_content, 
 
 
 if __name__ == "__main__":
-    project_path = '/Users/wangjiang/Public/software/android-workplace/andruid'
-    target_branch = 'master'
-    current_branch = 'feature/upper/7.6x.0_game_factory_v1.0'
+    project_path = ''
+    target_branch = ''
+    current_branch = ''
 
     args = sys.argv[1:]
     if len(args) > 0:
