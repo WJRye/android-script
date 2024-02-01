@@ -188,7 +188,7 @@ if __name__ == "__main__":
     # 项目名称，方便在输出结果html中显示
     project_name = 'My Project'
     # 第一步：执行 ./gradlew :app:mergeDebugNativeLibs
-    # execute_task()
+    execute_task()
     # 第二步：反序列化json
     data = deserialize_json(json_path)
     # 第三步：将数据转换为表格

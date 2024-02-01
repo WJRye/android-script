@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    name="Custom Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        Custom ruleset for Android application
+    </description>
+
+    <!-- rule des :https://pmd.github.io/pmd-6.41.0/pmd_rules_java.html -->
+    <exclude-pattern>.*/R.java</exclude-pattern>
+    <exclude-pattern>.*/gen/.*</exclude-pattern>
+    <!-- Your rules will come here -->
+    <!--     代码风格 -->
+    <rule ref="category/java/codestyle.xml" />
+    <!--     代码注释和文档 -->
+    <rule ref="category/java/documentation.xml" />
+    <!--     代码设计 -->
+    <rule ref="category/java/design.xml" />
+    <!--     最佳实践 -->
+    <rule ref="category/java/bestpractices.xml" />
+    <!--     容易出现运行时错误 -->
+    <rule ref="category/java/errorprone.xml" />
+    <!--    多线程时问题-->
+    <rule ref="category/java/multithreading.xml" />
+    <!--    需要优化代码的地方-->
+    <rule ref="category/java/performance.xml" />
+    <!--    安全问题-->
+    <rule ref="category/java/security.xml" />
+</ruleset>
