@@ -47,7 +47,7 @@ def get_commit_file_path_set(target_branch, current_branch, author):
             print(f"{' '.join(command)}: No commit files")
             return None
         for rename_file_path in rename_file_path_list:
-            file_path_list.remove(rename_file_path)
+            file_path_list.discard(rename_file_path)
         return file_path_list
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e}")
