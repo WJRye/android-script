@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from __init__ import get_git_user, check_branch, open_file
+from __init__ import get_git_user, check_branch, open_file, run_git_command
 
 
 def get_commit_file_path_set(target_branch, current_branch, author):
@@ -23,8 +23,7 @@ def get_commit_file_path_set(target_branch, current_branch, author):
         command = ['git', 'log', branch_command, '--author=' + author,
                    '--name-status', '--oneline']
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        file_path_list = set()
-        rename_file_path_list = set()
+        file_path_set = set()
         while True:
             output = process.stdout.readline()
             if output == '' and process.poll() is not None:
@@ -34,21 +33,21 @@ def get_commit_file_path_set(target_branch, current_branch, author):
                 text = output.strip().replace("\t", "")
                 if text.startswith('M') or text.startswith('A') or text.startswith('D'):
                     file_path = text[1:]
-                    file_path_list.add(file_path)
+                    file_path_set.add(file_path)
                 else:
                     # 记录重命名文件，需要移除
                     if output.strip().startswith('R'):
                         rename_file_path = output.strip().split('\t')[1]
-                        rename_file_path_list.add(rename_file_path)
-        if len(file_path_list) == 0:
+                        file_path_set.discard(rename_file_path)
+        if len(file_path_set) == 0:
             print(f"{' '.join(command)}: No commit files")
             return None
-        for rename_file_path in rename_file_path_list:
-            try:
-                file_path_list.remove(rename_file_path)
-            except KeyError:
-                pass
-        return file_path_list
+        filter_file_path_set = set()
+        for file_path in file_path_set:
+            file_in_current_branch = run_git_command(['git', 'ls-tree', current_branch, file_path])
+            if file_in_current_branch.find('blob') >= 0:
+                filter_file_path_set.add(file_path)
+        return filter_file_path_set
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e}")
         return None
