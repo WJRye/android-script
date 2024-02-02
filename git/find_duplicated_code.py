@@ -105,14 +105,17 @@ def make_cpd_report(project_path, pmd_cli_path, file_list, language):
     return report_path
 
 
-def get_file_path_list(project_path, file_suffix, exclude_file_dirs=[]):
+def get_file_path_dict(project_path, languages, exclude_file_dirs):
     """
     获取项目src文件夹下的java文件路径列表，以,分割
     :param project_path: 项目路径
-    :param file_suffix: 目标文件后缀
+    :param languages: 语言
+    :param exclude_file_dirs: 不包含的目录
     :return: 文件路径列表
     """
-    file_path_list = []
+    file_path_dict = {}
+    for language in languages.keys():
+        file_path_dict[language] = []
     for root, dirs, files in os.walk(project_path):
         for file in files:
             file_path = os.path.join(root, file)
@@ -121,10 +124,14 @@ def get_file_path_list(project_path, file_suffix, exclude_file_dirs=[]):
                 if file_path.find(exclude_file_dir) > 0:
                     exclude = True
                     break
-            if not exclude and file_path.endswith(file_suffix):
-                file_path_list.append(file_path)
+            if exclude:
+                continue
+            for language, file_suffix in languages.items():
+                if file_path.endswith(file_suffix):
+                    file_path_dict[language].append(file_path)
+                    break
 
-    return file_path_list
+    return file_path_dict
 
 
 def get_pmd_cli_path():
@@ -161,15 +168,16 @@ if __name__ == "__main__":
         print("Can't find pmd cli path")
         exit(1)
     default_language = {'java': '.java', 'kotlin': '.kt', 'python': '.py', 'swift': '.swift'}
-    exclude_file_dirs = ['venv']
+    exclude_file_dirs = ['venv', 'build', 'gen']
     # 第一步：同步分支
     os.chdir(root_project_path)
     if len(current_branch) > 0 and not check_branch(current_branch):
         exit(1)
     # 第二步：获取文件
-    for language, suffix in default_language.items():
-        # 因为有exclude_file_dirs，后续再优化这个逻辑
-        file_path_list = get_file_path_list(root_project_path, suffix, exclude_file_dirs)
+    file_path_dict = get_file_path_dict(root_project_path, default_language, exclude_file_dirs)
+    if len(file_path_dict) == 0:
+        exit(0)
+    for language, file_path_list in file_path_dict.items():
         if len(file_path_list) == 0:
             continue
         report_path = make_cpd_report(root_project_path, pmd_cli_path, file_path_list, language)
