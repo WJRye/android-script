@@ -18,8 +18,8 @@
 - [git](#git)
     - [查看某个版本某个作者的所有提交更改](#查看某个版本某个作者的所有提交更改)
     - [查看某个提交第一次出现的 release 版本](#查看某个提交第一次出现的-release-版本)
-    - [重复代码检查](#重复代码检查)
     - [增量代码检查](#增量代码检查)
+    - [重复代码检查](#重复代码检查)
 
 ## 引言
 
@@ -451,6 +451,7 @@ Go, Kotlin, Ruby, Swift等语言的重复代码检查。
 为项目代码路径，current_branch 为当前分支（也可以不指定）。执行该脚本后，会输出在项目 project_src_path 路径的所有重复代码检查结果：
 
 示例：在当前 android-script 项目中，查看重复代码：
+
 ```
 python3 find_duplicated_code.py /Users/wangjiang/Public/software/pycharm/workplace/github/android-script main
 
