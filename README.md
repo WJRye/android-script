@@ -29,6 +29,8 @@ projects、tasks、dependencies等信息，还会使用 git 命令来获取代�
 来简化这一部分工作，将常用的执行命令封装到 python 脚本中，每次想要获取某个信息时，就直接执行相关 python
 脚本。这样就可以省去开发中的细碎工作。（将脚本一次写好，使用到退休:)）
 
+**_另外，[git脚本](#git) 适用与任何项目，包括Python， Android, iOS项目等。_**
+
 ## python 环境
 
 Python Version 3.9.6
@@ -301,7 +303,7 @@ python3 native_libs.py /Users/wangjiang/Public/software/android-workplace/Demo
 Report File Path: /Users/wangjiang/Public/software/android-workplace/Demo/build/report/so/native_libs.html
 ```
 
-<img src="resources/native_libs.png" alt="native_libs 信息">
+<img src="resources/native_libs.png" alt="native_libs 信息"/>
 
 #### CI/CD
 
@@ -351,13 +353,14 @@ review；比如查看某个提交第一次出现的版本，方便排查问题�
 之后，随时查看自己本次版本迭代中的所有提交更改（随时对自己编写的代码进行自我 code review），现只能使用 git 命令：git log
 branch1...branch2 --author=wangjiang --name-status --oneline 等进行简单查看，而且较麻烦。我们期望有一个工具，能够展示自己当前分支提交的所有代码更改内容。
 
-使用 `python3 diff_branch.py android_project_path current_branch target_branch`，android_project_path
+使用 `python3 diff_branch.py project_path current_branch target_branch`，project_path
 为项目路径，current_branch 为当前分支，target_branch 为目标分支。适用业务场景：
 
 1. current_branch 为 feature 分支，target_branch 为拉出 current_branch 的主分支，比如：current_branch 为
    feature/7.63.0-wangjiang，target_branch 为 master 或 release/7.62.0，那么此时`diff_branch.py`用于查看自己在
    feature/7.63.0-wangjiang 的提交，也就是该 feature 的提交更改
-2. current_branch 为 release/7,63.0 分支，target_branch 为 7.62.0 分支，此时`diff_branch.py`用于查看自己在 release/7.63.0 分支上的提交，也就是自己在
+2. current_branch 为 release/7,63.0 分支，target_branch 为 7.62.0 分支，此时`diff_branch.py`用于查看自己在 release/7.63.0
+   分支上的提交，也就是自己在
    7.63.0
    版本的所有提交更改
 
@@ -371,7 +374,7 @@ python3 diff_branch.py /Users/wangjiang/Public/software/python-workplace/android
 Html Report Path: /Users/wangjiang/Public/software/python-workplace/android-script/build/reports/diff/WJRye/feature_0.0.2-wangjiang-diff-release_0.0.1.html
 ```
 
-<img src="build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.png" alt="文件报告">
+<img src="build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.png" alt="文件报告"/>
 
 <a href="./build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.html">
 feature_0.0.1-wangjiang-diff-release_0.0.2.html 文件报告</a>
@@ -384,6 +387,7 @@ feature_0.0.1-wangjiang-diff-release_0.0.2.html 文件报告</a>
 分支，能够辅助你得到更多有用的信息。
 
 示例：在当前 android-script 项目中，查看 commit id : dd1eee4 第一次出现的 release 分支
+
 ```
 python3 find_commit.py /Users/wangjiang/Public/software/python-workplace/android-script dd1eee4
 
@@ -391,13 +395,68 @@ python3 find_commit.py /Users/wangjiang/Public/software/python-workplace/android
 Html Report Path: /Users/wangjiang/Public/software/python-workplace/android-script/build/reports/diff/commit_id/dd1eee4.html
 ```
 
-<img src="build/reports/diff/commit_id/dd1eee4.png" alt="文件报告">
+<img src="build/reports/diff/commit_id/dd1eee4.png" alt="文件报告"/>
 <a href="./build/reports/diff/commit_id/dd1eee4.html"> dd1eee4.html 文件报告</a>
 
 *毫无疑问：该`find_commit.py`脚本适用与任何项目，包括 Android 项目。*
 
+### 增量代码检查
+
+> 随着项目的不断迭代，以及代码的增加和开发人员的增加，代码规范或代码质量的把控，是当前版本发布前必要的一环。在当前开发流程中：编码→构建→测试→发布，代码规范或代码质量相关问题，只能靠人工
+> Review，或灰度和线上 Bugly 反馈。人工 Review 代码，可能比较费时以及遗漏部分Case，而灰度和线上 Bugly
+> 反馈，为时已晚。所以，要在版本发布前尽量去发现代码质量问题，避免带到线上（被动反馈），可以在构建过程之前中去添加静态代码检查环节，让每一次的构建都能自动地去分析代码是否存在质量问题。
+
+在日常的 Android 项目开发中，如果每个 release 版本都去做全量静态代码检查，是不切实际的。因为很多项目都存在历史遗留问题，全量静态代码检查，会增加开发人员的工作负担，所以增量静态代码检查才可能实行。
+
+使用上面脚本 `diff_branch.py`可以[查看某个版本某个作者的所有提交更改](#查看某个版本某个作者的所有提交更改)
+，提交文件包含修改，删除、添加、重命名文件等。那么再结合 detekt 对 kotlin 语言静态代码检查，以及 pmd 对 java
+语言静态代码检查，就可以做增量代码检查。
+
+### 准备
+
+使用命令行运行 pmd 官方文档介绍：[pmd doc](https://docs.pmd-code.org/latest/pmd_userdocs_installation.html)。首先，在 pmd 的
+github [releases](https://github.com/pmd/pmd/releases) 中下载目前最新的版本：30-September-2023 - 7.0.0-rc4 中的
+pmd-dist-7.0.0-rc4-bin.zip 。下载后解压到[resources/cli/pmd](resources/cli/pmd)中：<br>
+<br><img src="resources/pmd.png" alt="pmd 目录" width="50%" height="50%"/>
+
+使用命令行运行 detekt 官方文档介绍：[detekt doc](https://detekt.dev/docs/gettingstarted/cli/)。首先，在 detekt 的
+github [releases](https://github.com/detekt/detekt/releases)
+中下载目前最新的版本：1.23.4 - 2023-11-26 中的
+detekt-cli-1.23.4-all.jar。下载后解压到[resources/cli/detekt](resources/cli/detekt)中：<br>
+<br><img src="resources/detekt.png" alt="pmd 目录" width="50%" height="50%"/>
+
+另外，pmd 检查规则配置文件：[rulesets.xml](resources/cli/pmd/rulesets.xml)，detekt
+检查规则配置文件：[detekt.yml](resources/cli/detekt/detekt.yml)，这两个文件是根据官方文档写的简易配置。
+
+---
+使用 `python3 increment_detect.py project_path current_branch target_branch`，project_path
+为项目或代码路径，current_branch 为当前分支，target_branch 为目标分支。执行该脚本后，会输出在 current_branch 分支上提交的代码更改的
+java 或 kotlin 静态代码检查结果：
+
+```
+python3 increment_detect.py /Users/wangjiang/Public/software/android-workplace/Demo/src release/7.63.0 release/7.62.0
+
+输出结果：
+Report File Path: /Users/wangjiang/Public/software/android-workplace/Demo/build/reports/detekt.html
+Report File Path: /Users/wangjiang/Public/software/android-workplace/Demo/build/reports/pmd-java.html
+```
+
 ### 重复代码检查
 
+随着项目的迭代，如果没有严格的 Code View，粘贴复制的代码会越来越多。
+pmd [cpd](https://docs.pmd-code.org/latest/pmd_userdocs_cpd.html) 可以找到项目中的重复代码，它支持 Java, JSP, C/C++, C#,
+Go, Kotlin, Ruby, Swift等语言的重复代码检查。
 
+使用 `python3 find_duplicated_code.py project_src_path current_branch(可选)`，project_src_path
+为项目代码路径，current_branch 为当前分支（也可以不指定）。执行该脚本后，会输出在项目 project_src_path 路径的所有重复代码检查结果：
 
-### 增量代码检查
+示例：在当前 android-script 项目中，查看重复代码：
+```
+python3 find_duplicated_code.py /Users/wangjiang/Public/software/pycharm/workplace/github/android-script main
+
+输出结果：
+Report File Path: /Users/wangjiang/Public/software/pycharm/workplace/github/android-script/build/reports/pmd-cpd-python.html
+```
+
+<img src="build/reports/pmd-cpd-python.png" alt="文件报告"/>
+<a href="./build/reports/pmd-cpd-python.html"> pmd-cpd-python.html 文件报告</a>

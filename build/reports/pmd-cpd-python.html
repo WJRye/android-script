@@ -30,7 +30,7 @@
                </style>
            </head>
            <body>
-               <h1>/Users/wangjiang/Public/software/pycharm/workplace/github/android-script Duplicate code: 0 found</h1>
+               <h1>/Users/wangjiang/Public/software/pycharm/workplace/github/android-script Duplicate code: 1 found</h1>
                <pre>
                   Found a 30 line (123 tokens) duplication in the following files: </br>Starting at line 5 of /Users/wangjiang/Public/software/pycharm/workplace/github/android-script/git/__init__.py</br>Starting at line 6 of /Users/wangjiang/Public/software/pycharm/workplace/github/android-script/gradle/__init__.py</br></br>def run_git_command(command):</br>    """</br>    :param command: 实际相关命令</br>    :return: 执行命令结果</br>    """</br>    try:</br>        result = subprocess.run(command, check=True, text=True, capture_output=True, encoding='utf-8')</br>        return result.stdout</br>    except subprocess.CalledProcessError as e:</br>        print(f"Error executing command: {e}")</br>        return None</br></br></br>def open_file(file_path):</br>    """</br>    在电脑上打开截屏文件</br>    :param file_path: 电脑上的截屏文件地址</br>    """</br>    system = platform.system().lower()</br>    if system == "darwin":  # macOS</br>        subprocess.run(["open", file_path])</br>    elif system == "linux":  # Linux</br>        subprocess.run(["xdg-open", file_path])</br>    elif system == "windows":  # Windows</br>        subprocess.run(["start", file_path], shell=True)</br>    else:</br>        print("Unsupported operating system.")</br></br></br>def sync_branch(branch):</br></br></br>
                </pre>

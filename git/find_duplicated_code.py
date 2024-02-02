@@ -25,7 +25,10 @@ def make_cpd_report(project_path, pmd_cli_path, file_list, language):
     :param java_src_path: java 文件路径地址
     :return: html 报告地址
     """
-    report_dir = f"{project_path}{os.path.sep}build{os.path.sep}reports"
+    build_dir = f"{project_path}{os.path.sep}build"
+    if os.path.exists(build_dir) and os.path.isfile(build_dir):
+        build_dir = f"{project_path}{os.path.sep}build-py"
+    report_dir = f"{build_dir}{os.path.sep}reports"
     if not os.path.exists(report_dir):
         os.makedirs(report_dir)
     report_path = f"{report_dir}{os.path.sep}pmd-cpd-{language}.html"
@@ -45,15 +48,15 @@ def make_cpd_report(project_path, pmd_cli_path, file_list, language):
         output = subprocess.run(args, shell=True, stdout=subprocess.PIPE, text=True)
         lines = output.stdout.split('\n')
         content = ""
-        count = 0
+        count = 1
         for line in lines:
             if line.startswith('='):
                 count += 1
                 content += "<hr>"
                 continue
             content += line + "</br>"
-        if count > 0:
-            count += 2
+        if count > 1:
+            count += 1
         title = f"{project_path} Duplicate code: {count} found"
         html_content = f"""
            <!DOCTYPE html>
@@ -144,7 +147,7 @@ def get_pmd_cli_path():
 
 
 if __name__ == "__main__":
-    root_project_path = '/Users/wangjiang/Public/software/android-workplace/andruid/common/editor/src'
+    root_project_path = ''
     current_branch = ''
 
     args = sys.argv[1:]
@@ -157,15 +160,16 @@ if __name__ == "__main__":
     if pmd_cli_path is None:
         print("Can't find pmd cli path")
         exit(1)
-    default_language = {'java': '.java', 'kotlin': '.kt', 'python': '.py'}
-
+    default_language = {'java': '.java', 'kotlin': '.kt', 'python': '.py', 'swift': '.swift'}
+    exclude_file_dirs = ['venv']
     # 第一步：同步分支
     os.chdir(root_project_path)
     if len(current_branch) > 0 and not check_branch(current_branch):
         exit(1)
     # 第二步：获取文件
     for language, suffix in default_language.items():
-        file_path_list = get_file_path_list(root_project_path, suffix)
+        # 因为有exclude_file_dirs，后续再优化这个逻辑
+        file_path_list = get_file_path_list(root_project_path, suffix, exclude_file_dirs)
         if len(file_path_list) == 0:
             continue
         report_path = make_cpd_report(root_project_path, pmd_cli_path, file_path_list, language)

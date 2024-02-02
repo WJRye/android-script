@@ -174,9 +174,9 @@ def get_cli_path(target):
 
 
 if __name__ == "__main__":
-    root_project_path = '/Users/wangjiang/Public/software/android-workplace/andruid'
-    current_branch = 'release/7.63.0'
-    target_branch = 'release/7.62.0'
+    root_project_path = ''
+    current_branch = ''
+    target_branch = ''
 
     args = sys.argv[1:]
     if len(args) > 0:
@@ -205,6 +205,7 @@ if __name__ == "__main__":
     # 第四步：将提交的文件全路径传给 detekt 和 pmd cli，生成 对应的 java 和 kotlin 静态代码检查 html 报告
     report_path_list = make_report(root_project_path, kotlin_file_list, java_file_list)
     for report_path in report_path_list:
-        if len(report_path) > 0:
-            print(f"Report File Path: {report_path}")
-            open_file(report_path)
+        if len(report_path) == 0:
+            continue
+        print(f"Report File Path: {report_path}")
+        open_file(report_path)
