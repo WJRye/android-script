@@ -17,7 +17,7 @@ def check_branch(current_branch):
     return True
 
 
-def make_cpd_report(project_path, pmd_cli_path, java_src_path):
+def make_cpd_report(project_path, pmd_cli_path, file_list, language):
     """
     生成重复代码报告
     :param project_path: 项目路径
@@ -28,18 +28,19 @@ def make_cpd_report(project_path, pmd_cli_path, java_src_path):
     report_dir = f"{project_path}{os.path.sep}build{os.path.sep}reports"
     if not os.path.exists(report_dir):
         os.makedirs(report_dir)
-    report_path = f"{report_dir}{os.path.sep}pmd-cpd.html"
+    report_path = f"{report_dir}{os.path.sep}pmd-cpd-{language}.html"
     if os.path.exists(report_path):
         os.remove(report_path)
     cpd_cli_arg_cpd = f"{pmd_cli_path} cpd"
     cpd_cli_arg_token = "--minimum-tokens=120"
-    cpd_cli_arg_dir = f"--dir={java_src_path}"
-    cpd_cli_arg_language = "--language=java"
+    cpd_cli_arg_dir = f"--dir={file_list}"
+    cpd_cli_arg_language = f"--language={language}"
     cpd_cli_arg_format = "-f text"
     cpd_cli_arg_no_fail = "--no-fail-on-violation"
     cpd_cli_arg_encoding = "--encoding=UTF-8"
-    cpd_cli_arg_ignore_ignore_annotation = "--ignore-annotations"
-    args = f"{cpd_cli_arg_cpd} {cpd_cli_arg_token} {cpd_cli_arg_dir} {cpd_cli_arg_language} {cpd_cli_arg_format} {cpd_cli_arg_no_fail} {cpd_cli_arg_encoding} {cpd_cli_arg_ignore_ignore_annotation}"
+    cpd_cli_arg_ignore_annotations = "--ignore-annotations"
+    cpd_cli_arg_skip_lexical_errors = " --skip-lexical-errors"
+    args = f"{cpd_cli_arg_cpd} {cpd_cli_arg_token} {cpd_cli_arg_dir} {cpd_cli_arg_language} {cpd_cli_arg_format} {cpd_cli_arg_no_fail} {cpd_cli_arg_encoding} {cpd_cli_arg_ignore_annotations} {cpd_cli_arg_skip_lexical_errors}"
     try:
         output = subprocess.run(args, shell=True, stdout=subprocess.PIPE, text=True)
         lines = output.stdout.split('\n')
@@ -101,31 +102,26 @@ def make_cpd_report(project_path, pmd_cli_path, java_src_path):
     return report_path
 
 
-def get_java_src_path(project_path):
+def get_file_path_list(project_path, file_suffix, exclude_file_dirs=[]):
     """
     获取项目src文件夹下的java文件路径列表，以,分割
     :param project_path: 项目路径
-    :return: java 文件路径列表
+    :param file_suffix: 目标文件后缀
+    :return: 文件路径列表
     """
-    java_src_path_dict = {}
-    src_main_dir_dict = {}
+    file_path_list = []
     for root, dirs, files in os.walk(project_path):
-        dirname = os.path.dirname(root)
-        suffix = f"{os.path.sep}src"
-        if dirname.endswith(suffix):
-            sub_project_path = dirname[0:len(dirname) - len(suffix)]
-            src_main_dir_dict[sub_project_path] = dirname
+        for file in files:
+            file_path = os.path.join(root, file)
+            exclude = False
+            for exclude_file_dir in exclude_file_dirs:
+                if file_path.find(exclude_file_dir) > 0:
+                    exclude = True
+                    break
+            if not exclude and file_path.endswith(file_suffix):
+                file_path_list.append(file_path)
 
-    for sub_project_path, src_main_dir in src_main_dir_dict.items():
-        java_src_path_list = []
-        for root, dirs, files in os.walk(src_main_dir):
-            for file in files:
-                if os.path.abspath(file).endswith(".java"):
-                    java_src_path_list.append(os.path.join(root, file))
-        if len(java_src_path_list) > 0:
-            java_src_path_dict[sub_project_path] = ','.join(java_src_path_list)
-
-    return java_src_path_dict
+    return file_path_list
 
 
 def get_pmd_cli_path():
@@ -148,7 +144,7 @@ def get_pmd_cli_path():
 
 
 if __name__ == "__main__":
-    root_project_path = '/Users/wangjiang/Public/software/android-workplace/andruid/common/editor'
+    root_project_path = '/Users/wangjiang/Public/software/android-workplace/andruid/common/editor/src'
     current_branch = ''
 
     args = sys.argv[1:]
@@ -161,14 +157,17 @@ if __name__ == "__main__":
     if pmd_cli_path is None:
         print("Can't find pmd cli path")
         exit(1)
+    default_language = {'java': '.java', 'kotlin': '.kt', 'python': '.py'}
 
     # 第一步：同步分支
     os.chdir(root_project_path)
     if len(current_branch) > 0 and not check_branch(current_branch):
         exit(1)
-    # 第二步：获取 java 文件
-    java_src_path_dict = get_java_src_path(root_project_path)
-    for project_path, java_src_path in java_src_path_dict.items():
-        report_path = make_cpd_report(project_path, pmd_cli_path, java_src_path)
+    # 第二步：获取文件
+    for language, suffix in default_language.items():
+        file_path_list = get_file_path_list(root_project_path, suffix)
+        if len(file_path_list) == 0:
+            continue
+        report_path = make_cpd_report(root_project_path, pmd_cli_path, file_path_list, language)
         print(f"Report File Path: {report_path}")
         open_file(report_path)

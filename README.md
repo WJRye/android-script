@@ -355,14 +355,13 @@ branch1...branch2 --author=wangjiang --name-status --oneline 等进行简单查�
 为项目路径，current_branch 为当前分支，target_branch 为目标分支。适用业务场景：
 
 1. current_branch 为 feature 分支，target_branch 为拉出 current_branch 的主分支，比如：current_branch 为
-   feature/7.63.0-wangjiang，target_branch 为 master 或 release/7.62.0，那么此时用于查看自己在 feature/7.63.0-wangjiang
-   的提交，也就是该
-   feature 的提交更改
-2. current_branch 为 release/7,63.0 分支，target_branch 为 7.62.0 分支，此时用于查看自己在 release/7.63.0 分支上的提交，也就是自己在
+   feature/7.63.0-wangjiang，target_branch 为 master 或 release/7.62.0，那么此时`diff_branch.py`用于查看自己在
+   feature/7.63.0-wangjiang 的提交，也就是该 feature 的提交更改
+2. current_branch 为 release/7,63.0 分支，target_branch 为 7.62.0 分支，此时`diff_branch.py`用于查看自己在 release/7.63.0 分支上的提交，也就是自己在
    7.63.0
    版本的所有提交更改
 
-示例：在当前 android-script 项目中，自己在 feature 分支 feature/0.0.2-wangjiang 上提交的所有更改（current_branch
+示例：在当前 android-script 项目中，查看自己在 feature 分支 feature/0.0.2-wangjiang 上提交的所有更改（current_branch
 为feature/0.0.2-wangjiang，target_branch为release/0.0.1）
 
 ```
@@ -371,26 +370,34 @@ python3 diff_branch.py /Users/wangjiang/Public/software/python-workplace/android
 输出结果：
 Html Report Path: /Users/wangjiang/Public/software/python-workplace/android-script/build/reports/diff/WJRye/feature_0.0.2-wangjiang-diff-release_0.0.1.html
 ```
+
 <img src="build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.png" alt="文件报告">
 
 <a href="./build/reports/diff/WJRye/feature_0.0.1-wangjiang-diff-release_0.0.2.html">
 feature_0.0.1-wangjiang-diff-release_0.0.2.html 文件报告</a>
+
+*毫无疑问：该`diff_branch.py`脚本适用与任何项目，包括 Android 项目。*
 
 ### 查看某个提交第一次出现的 release 版本
 
 在日常的 Android 项目开发中，如果想排查问题，或查看 feature 在哪个版本上线的，那么查看某个 commit 第一次出现的 release
 分支，能够辅助你得到更多有用的信息。
 
+示例：在当前 android-script 项目中，查看 commit id : dd1eee4 第一次出现的 release 分支
 ```
 python3 find_commit.py /Users/wangjiang/Public/software/python-workplace/android-script dd1eee4
 
 输出结果：
 Html Report Path: /Users/wangjiang/Public/software/python-workplace/android-script/build/reports/diff/commit_id/dd1eee4.html
 ```
+
 <img src="build/reports/diff/commit_id/dd1eee4.png" alt="文件报告">
 <a href="./build/reports/diff/commit_id/dd1eee4.html"> dd1eee4.html 文件报告</a>
 
+*毫无疑问：该`find_commit.py`脚本适用与任何项目，包括 Android 项目。*
+
 ### 重复代码检查
+
 
 
 ### 增量代码检查
